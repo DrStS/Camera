@@ -235,123 +235,7 @@ Matching bounding boxes accu time 0.821093 ms
 Shi-Tomasi detection with n=1828 keypoints in 13.587 ms
 #5 : DETECT KEYPOINTS done
 BRISK descriptor extraction in 20.0122 ms
-#6 : EXTRACT DESCRIPTORS done### FP2 TTC Lidar computation using median
-Only deltaX is of interest for the equation, therefore median is a good option
-```cpp
-    // auxiliary variables
-    double dT = 1 / frameRate; // time between two measurements in seconds
-
-    std::vector<double> lidarPointsPrevX;
-    std::vector<double> lidarPointsCurrX;
-
-    // find closest distance to Lidar points
-    double minXPrev = 1e9, minXCurr = 1e9;
-    for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
-    {
-        minXPrev = minXPrev > it->x ? it->x : minXPrev;
-        lidarPointsPrevX.push_back(it->x);
-    }
-
-    for (auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it)
-    {
-        minXCurr = minXCurr > it->x ? it->x : minXCurr;
-        lidarPointsCurrX.push_back(it->x);
-    }
-    double medXPrev = computeMedianDouble(lidarPointsPrevX);
-    double medXCurr = computeMedianDouble(lidarPointsCurrX);
-    // compute TTC from both measurements
-    double TTCmin = minXCurr * dT / (minXPrev - minXCurr);
-    cout << "= TTCmin: " << TTCmin << endl;
-    TTC = medXCurr * dT / (medXPrev - medXCurr);
-```
-#7 : MATCH KEYPOINT DESCRIPTO### FP2 TTC Lidar computation using median
-Only deltaX is of interest for the equation, therefore median is a good option
-```cpp
-    // auxiliary variables
-    double dT = 1 / frameRate; // time between two measurements in seconds
-
-    std::vector<double> lidarPointsPrevX;
-    std::vector<double> lidarPointsCurrX;
-
-    // find closest distance to Lidar points
-    double minXPrev = 1e9, minXCurr = 1e9;
-    for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
-    {
-        minXPrev = minXPrev > it->x ? it->x : minXPrev;
-        lidarPointsPrevX.push_back(it->x);
-    }
-
-    for (auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it)
-    {
-        minXCurr = minXCurr > it->x ? it->x : minXCurr;
-        lidarPointsCurrX.push_back(it->x);
-    }
-    double medXPrev = computeMedianDouble(lidarPointsPrevX);
-    double medXCurr = computeMedianDouble(lidarPointsCurrX);
-    // compute TTC from both measurements
-    double TTCmin = minXCurr * dT / (minXPrev - minXCurr);
-    cout << "= TTCmin: " << TTCmin << endl;
-    TTC = medXCurr * dT / (medXPrev - medXCurr);
-```
-Matching bounding boxes took ### FP2 TTC Lidar computation using median
-Only deltaX is of interest for the equation, therefore median is a good option
-```cpp
-    // auxiliary variables
-    double dT = 1 / frameRate; // time between two measurements in seconds
-
-    std::vector<double> lidarPointsPrevX;
-    std::vector<double> lidarPointsCurrX;
-
-    // find closest distance to Lidar points
-    double minXPrev = 1e9, minXCurr = 1e9;
-    for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
-    {
-        minXPrev = minXPrev > it->x ? it->x : minXPrev;
-        lidarPointsPrevX.push_back(it->x);
-    }
-
-    for (auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it)
-    {
-        minXCurr = minXCurr > it->x ? it->x : minXCurr;
-        lidarPointsCurrX.push_back(it->x);
-    }
-    double medXPrev = computeMedianDouble(lidarPointsPrevX);
-    double medXCurr = computeMedianDouble(lidarPointsCurrX);
-    // compute TTC from both measurements
-    double TTCmin = minXCurr * dT / (minXPrev - minXCurr);
-    cout << "= TTCmin: " << TTCmin << endl;
-    TTC = medXCurr * dT / (medXPrev - medXCurr);
-```
-Matching bounding boxes accu ### FP2 TTC Lidar computation using median
-Only deltaX is of interest for the equation, therefore median is a good option
-```cpp
-    // auxiliary variables
-    double dT = 1 / frameRate; // time between two measurements in seconds
-
-    std::vector<double> lidarPointsPrevX;
-    std::vector<double> lidarPointsCurrX;
-
-    // find closest distance to Lidar points
-    double minXPrev = 1e9, minXCurr = 1e9;
-    for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
-    {
-        minXPrev = minXPrev > it->x ? it->x : minXPrev;
-        lidarPointsPrevX.push_back(it->x);
-    }
-
-    for (auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it)
-    {
-        minXCurr = minXCurr > it->x ? it->x : minXCurr;
-        lidarPointsCurrX.push_back(it->x);
-    }
-    double medXPrev = computeMedianDouble(lidarPointsPrevX);
-    double medXCurr = computeMedianDouble(lidarPointsCurrX);
-    // compute TTC from both measurements
-    double TTCmin = minXCurr * dT / (minXPrev - minXCurr);
-    cout << "= TTCmin: " << TTCmin << endl;
-    TTC = medXCurr * dT / (medXPrev - medXCurr);
-```8 ms
-#8 : TRACK 3D OBJECT BOUNDING BOXES done
+#6 : EXTRACT DESCRIPTORS done
 = TTCmin: 7.11572
 ==== 
 ==== TTC Lidar: 16.6894
@@ -586,6 +470,130 @@ Total number of Lidar TTC frame drops: 0
 
 ```
 
+### FP2 TTC Lidar computation using median
+Only deltaX is of interest for the equation, therefore median is a good option
+```cpp
+    // auxiliary variables
+    double dT = 1 / frameRate; // time between two measurements in seconds
+
+    std::vector<double> lidarPointsPrevX;
+    std::vector<double> lidarPointsCurrX;
+
+    // find closest distance to Lidar points
+    double minXPrev = 1e9, minXCurr = 1e9;
+    for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
+    {
+        minXPrev = minXPrev > it->x ? it->x : minXPrev;
+        lidarPointsPrevX.push_back(it->x);
+    }
+
+    for (auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it)
+    {
+        minXCurr = minXCurr > it->x ? it->x : minXCurr;
+        lidarPointsCurrX.push_back(it->x);
+    }
+    double medXPrev = computeMedianDouble(lidarPointsPrevX);
+    double medXCurr = computeMedianDouble(lidarPointsCurrX);
+    // compute TTC from both measurements
+    double TTCmin = minXCurr * dT / (minXPrev - minXCurr);
+    cout << "= TTCmin: " << TTCmin << endl;
+    TTC = medXCurr * dT / (medXPrev - medXCurr);
+```
+### FP2 TTC Lidar computation using median
+
+Only deltaX is of interest for the equation, therefore median is a good option
+
+```cpp
+    // auxiliary variables
+    double dT = 1 / frameRate; // time between two measurements in seconds
+
+    std::vector<double> lidarPointsPrevX;
+    std::vector<double> lidarPointsCurrX;
+
+    // find closest distance to Lidar points
+    double minXPrev = 1e9, minXCurr = 1e9;
+    for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
+    {
+        minXPrev = minXPrev > it->x ? it->x : minXPrev;
+        lidarPointsPrevX.push_back(it->x);
+    }
+
+    for (auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it)
+    {
+        minXCurr = minXCurr > it->x ? it->x : minXCurr;
+        lidarPointsCurrX.push_back(it->x);
+    }
+    double medXPrev = computeMedianDouble(lidarPointsPrevX);
+    double medXCurr = computeMedianDouble(lidarPointsCurrX);
+    // compute TTC from both measurements
+    double TTCmin = minXCurr * dT / (minXPrev - minXCurr);
+    cout << "= TTCmin: " << TTCmin << endl;
+    TTC = medXCurr * dT / (medXPrev - medXCurr);
+```
+
+Matching bounding boxes took ### FP2 TTC Lidar computation using median
+Only deltaX is of interest for the equation, therefore median is a good option
+
+```cpp
+    // auxiliary variables
+    double dT = 1 / frameRate; // time between two measurements in seconds
+
+    std::vector<double> lidarPointsPrevX;
+    std::vector<double> lidarPointsCurrX;
+
+    // find closest distance to Lidar points
+    double minXPrev = 1e9, minXCurr = 1e9;
+    for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
+    {
+        minXPrev = minXPrev > it->x ? it->x : minXPrev;
+        lidarPointsPrevX.push_back(it->x);
+    }
+
+    for (auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it)
+    {
+        minXCurr = minXCurr > it->x ? it->x : minXCurr;
+        lidarPointsCurrX.push_back(it->x);
+    }
+    double medXPrev = computeMedianDouble(lidarPointsPrevX);
+    double medXCurr = computeMedianDouble(lidarPointsCurrX);
+    // compute TTC from both measurements
+    double TTCmin = minXCurr * dT / (minXPrev - minXCurr);
+    cout << "= TTCmin: " << TTCmin << endl;
+    TTC = medXCurr * dT / (medXPrev - medXCurr);
+```
+
+Matching bounding boxes accu ### FP2 TTC Lidar computation using median
+Only deltaX is of interest for the equation, therefore median is a good option
+
+```cpp
+    // auxiliary variables
+    double dT = 1 / frameRate; // time between two measurements in seconds
+
+    std::vector<double> lidarPointsPrevX;
+    std::vector<double> lidarPointsCurrX;
+
+    // find closest distance to Lidar points
+    double minXPrev = 1e9, minXCurr = 1e9;
+    for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
+    {
+        minXPrev = minXPrev > it->x ? it->x : minXPrev;
+        lidarPointsPrevX.push_back(it->x);
+    }
+
+    for (auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it)
+    {
+        minXCurr = minXCurr > it->x ? it->x : minXCurr;
+        lidarPointsCurrX.push_back(it->x);
+    }
+    double medXPrev = computeMedianDouble(lidarPointsPrevX);
+    double medXCurr = computeMedianDouble(lidarPointsCurrX);
+    // compute TTC from both measurements
+    double TTCmin = minXCurr * dT / (minXPrev - minXCurr);
+    cout << "= TTCmin: " << TTCmin << endl;
+    TTC = medXCurr * dT / (medXPrev - medXCurr);
+```
+
+
 ### FP3 Assign enclosed keypoint matches
 
 Use median euclidean distance between previous and current keypoint of all matches to filter outliers.
@@ -621,7 +629,9 @@ Use median euclidean distance between previous and current keypoint of all match
 ```
 
 ### FP4 Compute time-to-collision based on camera
+
 Use median euclidean distance between all keypoint to filter outliers.
+
 ```cpp
     // compute distance ratios between all matched keypoints
     vector<double> distRatios; // stores the distance ratios for all keypoints between curr. and prev. frame
