@@ -12,7 +12,7 @@ In this final project, you will implement the missing parts in the schematic. To
 
 ## Comments from Stefan Sicklinger
 
-### FP1 Bounding box matching
+### FP.1 Bounding box matching
  A multimap is used and a filtering of keypoints based on the distance can be performed
 ```cpp
     double t = (double)cv::getTickCount();
@@ -141,7 +141,7 @@ In this final project, you will implement the missing parts in the schematic. To
         cout << "Matching bounding boxes accu time " << 1000 * totalTime / 1.0 << " ms" << endl;
 
 ```
-### FP2 TTC Lidar computation using median
+### FP.2 TTC Lidar computation using median
 Only deltaX is of interest for the equation, therefore median is a good option
 ```cpp
     // auxiliary variables
@@ -470,7 +470,7 @@ Total number of Lidar TTC frame drops: 0
 
 ```
 
-### FP3 Assign enclosed keypoint matches
+### FP.3 Assign enclosed keypoint matches
 
 Use median euclidean distance between previous and current keypoint of all matches to filter outliers.
 
@@ -504,7 +504,7 @@ Use median euclidean distance between previous and current keypoint of all match
     cout << "For bounding box ID: " << boundingBox.boxID << " " << boundingBox.kptMatches.size() << " are associated!" << endl;
 ```
 
-### FP4 Compute time-to-collision based on camera
+### FP.4 Compute time-to-collision based on camera
 
 Use median euclidean distance between all keypoint to filter outliers.
 
