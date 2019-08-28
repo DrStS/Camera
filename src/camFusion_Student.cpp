@@ -192,13 +192,13 @@ void computeTTCCamera(std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPo
 {
     // compute distance ratios between all matched keypoints
     vector<double> distRatios; // stores the distance ratios for all keypoints between curr. and prev. frame
-    for (auto it1 = kptMatches.begin(); it1 != kptMatches.end() - 1; ++it1)
-    { // outer kpt. loop
+    double medDistRatio;
 
+    for (auto it1 = kptMatches.begin(); it1 != kptMatches.end(); ++it1)
+    { // outer kpt. loop
         // get current keypoint and its matched partner in the prev. frame
         cv::KeyPoint kpOuterCurr = kptsCurr.at(it1->trainIdx);
         cv::KeyPoint kpOuterPrev = kptsPrev.at(it1->queryIdx);
-
         for (auto it2 = kptMatches.begin() + 1; it2 != kptMatches.end(); ++it2)
         { // inner kpt.-loop
 
@@ -221,14 +221,14 @@ void computeTTCCamera(std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPo
         } // eof inner loop over all matched kpts
     }     // eof outer loop over all matched kpts
 
+    medDistRatio = computeMedianDouble(distRatios);
+
     // only continue if list of distance ratios is not empty
-    if (distRatios.size() == 0)
+    if ((distRatios.size() == 0) || ((1 - medDistRatio) == 0))
     {
-        TTC = NAN;
+        TTC = 1e9;
         return;
     }
-
-    double medDistRatio = computeMedianDouble(distRatios);
     double dT = 1 / frameRate;
     TTC = -dT / (1 - medDistRatio);
 }
@@ -257,11 +257,16 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
     }
     double medXPrev = computeMedianDouble(lidarPointsPrevX);
     double medXCurr = computeMedianDouble(lidarPointsCurrX);
+    if (((medXPrev - medXCurr) == 0))
+    {
+        TTC = 1e9;
+        return;
+    }
     // compute TTC from both measurements
     double TTCmin = minXCurr * dT / (minXPrev - minXCurr);
-    cout << "Distance X: " << medXCurr << endl;
-    cout << "Speed (ms): " << (medXPrev - medXCurr) / dT << endl;
-    cout << "Speed (kmh): " << ((medXPrev - medXCurr) / dT) * 3.6 << endl;
+    // cout << "Distance X: " << medXCurr << endl;
+    // cout << "Speed (ms): " << (medXPrev - medXCurr) / dT << endl;
+    // cout << "Speed (kmh): " << ((medXPrev - medXCurr) / dT) * 3.6 << endl;
     // cout << "= TTCmin: " << TTCmin << endl;
     TTC = medXCurr * dT / (medXPrev - medXCurr);
 }

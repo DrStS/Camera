@@ -664,7 +664,7 @@ Use median euclidean distance between all keypoint to filter outliers.
     TTC = -dT / (1 - medDistRatio);
 ```
 
-### FP5 Performance evaluation 1
+### FP.5 Performance evaluation 1
 Within 20 frames the ego vehicle reduces the distance by approximately 1m (8m-7m Lidar cloud). The framerate is 10Hz -> 20 frames -> ~2sec. Average diff velocity of the ego vehicle vs preceeding vehicle is 0.5m/s. Assumation, both vehicles move with constant velocity within this 20 frames time window. For 8m distance TTC: 16sec. For 7m distance TTC: 14sec
 
 For propper filtering and usage of high quality keypoints the code gives:
@@ -674,6 +674,14 @@ TTC Lidar mean 11.7293 min: 8.3988 max: 16.6894
 ```
 Bearing in mind the assumpation of the constant velocity TTC model used. The results are not way off and within expections. This changes if i.e. min(distance) is used. Then you get even unphyiscal results e.g. negative TTC. This is due to the outliers.
 
+### FP.6 Performance evaluation 2
+Please note that if the bounding box matching based on max number of keypoints is wrong, hence the following check is not passed. 
+```cpp
+if (currBB->lidarPoints.size() > 0 && prevBB->lidarPoints.size() > 0) // only compute TTC if we have Lidar points
+```
+In such a case the descriptor/detector combination is not discussed anymore. 
+
+                                
 
 
 
