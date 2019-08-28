@@ -106,14 +106,18 @@ int main(int argc, const char *argv[])
     int dataBufferSize = 2;                       // no. of images which are held in memory (ring buffer) at the same time
     vector<DataFrame> dataBuffer;                 // list of data frames which are held in memory at the same time
     bool bVis = false;                            // visualize results
+    bool verbose = false;
 
     /* MAIN LOOP OVER ALL IMAGES */
     unsigned int numTTCLidarFrameDrops = 0;
-
-    for (size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex += imgStepWidth)
+    size_t imgIndex;
+    vector<double> CameraTTC;
+    vector<double> LidarTTC;
+    for (imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex += imgStepWidth)
     {
         /* LOAD IMAGE INTO BUFFER */
-
+        cout << "===========================" << endl;
+        cout << "Image: " << imgIndex << endl;
         // assemble filenames for current index
         ostringstream imgNumber;
         imgNumber << setfill('0') << setw(imgFillWidth) << imgStartIndex + imgIndex;
@@ -126,18 +130,20 @@ int main(int argc, const char *argv[])
         DataFrame frame;
         frame.cameraImg = img;
         dataBuffer.push_back(frame);
-
-        cout << "#1 : LOAD IMAGE INTO BUFFER done" << endl;
+        if (verbose)
+            cout
+                << "#1 : LOAD IMAGE INTO BUFFER done" << endl;
 
         /* DETECT & CLASSIFY OBJECTS */
 
         float confThreshold = 0.2;
         float nmsThreshold = 0.4;
-        bVis = false;
+        bVis = true;
         detectObjects((dataBuffer.end() - 1)->cameraImg, (dataBuffer.end() - 1)->boundingBoxes, confThreshold, nmsThreshold,
                       yoloBasePath, yoloClassesFile, yoloModelConfiguration, yoloModelWeights, bVis);
-
-        cout << "#2 : DETECT & CLASSIFY OBJECTS done" << endl;
+        if (verbose)
+            cout
+                << "#2 : DETECT & CLASSIFY OBJECTS done" << endl;
 
         /* CROP LIDAR POINTS */
 
@@ -151,8 +157,9 @@ int main(int argc, const char *argv[])
         cropLidarPoints(lidarPoints, minX, maxX, maxY, minZ, maxZ, minR);
 
         (dataBuffer.end() - 1)->lidarPoints = lidarPoints;
-
-        cout << "#3 : CROP LIDAR POINTS done" << endl;
+        if (verbose)
+            cout
+                << "#3 : CROP LIDAR POINTS done" << endl;
 
         /* CLUSTER LIDAR POINT CLOUD */
 
@@ -167,8 +174,9 @@ int main(int argc, const char *argv[])
             show3DObjects((dataBuffer.end() - 1)->boundingBoxes, cv::Size(4.0, 20.0), cv::Size(800, 800), true);
         }
         bVis = false;
-
-        cout << "#4 : CLUSTER LIDAR POINT CLOUD done" << endl;
+        if (verbose)
+            cout
+                << "#4 : CLUSTER LIDAR POINT CLOUD done" << endl;
 
         // REMOVE THIS LINE BEFORE PROCEEDING WITH THE FINAL PROJECT
         //continue; // skips directly to the next image without processing what comes beneath
@@ -208,8 +216,9 @@ int main(int argc, const char *argv[])
 
         // push keypoints and descriptor for current frame to end of data buffer
         (dataBuffer.end() - 1)->keypoints = keypoints;
-
-        cout << "#5 : DETECT KEYPOINTS done" << endl;
+        if (verbose)
+            cout
+                << "#5 : DETECT KEYPOINTS done" << endl;
 
         /* EXTRACT KEYPOINT DESCRIPTORS */
 
@@ -219,8 +228,8 @@ int main(int argc, const char *argv[])
 
         // push descriptors for current frame to end of data buffer
         (dataBuffer.end() - 1)->descriptors = descriptors;
-
-        cout << "#6 : EXTRACT DESCRIPTORS done" << endl;
+        if (verbose)
+            cout << "#6 : EXTRACT DESCRIPTORS done" << endl;
 
         if (dataBuffer.size() > 1) // wait until at least two images have been processed
         {
@@ -238,8 +247,8 @@ int main(int argc, const char *argv[])
 
             // store matches in current data frame
             (dataBuffer.end() - 1)->kptMatches = matches;
-
-            cout << "#7 : MATCH KEYPOINT DESCRIPTORS done" << endl;
+            if (verbose)
+                cout << "#7 : MATCH KEYPOINT DESCRIPTORS done" << endl;
             bVis = false;
             if (bVis)
             {
@@ -267,8 +276,9 @@ int main(int argc, const char *argv[])
 
             // store matches in current data frame
             (dataBuffer.end() - 1)->bbMatches = bbBestMatches;
-
-            cout << "#8 : TRACK 3D OBJECT BOUNDING BOXES done" << endl;
+            if (verbose)
+                cout
+                    << "#8 : TRACK 3D OBJECT BOUNDING BOXES done" << endl;
 
             /* COMPUTE TTC ON OBJECT IN FRONT */
 
@@ -316,8 +326,9 @@ int main(int argc, const char *argv[])
                     cout << "==== " << endl;
                     cout << "==== TTC Camera: " << ttcCamera << endl;
                     cout << "==== " << endl;
+                    CameraTTC.push_back(ttcCamera);
+                    LidarTTC.push_back(ttcLidar);
                     bVis = false;
-
                     if (bVis)
                     {
                         cv::Mat visImg = (dataBuffer.end() - 1)->cameraImg.clone();
@@ -349,8 +360,14 @@ int main(int argc, const char *argv[])
     } // eof loop over all images
 
     cout << "======== " << endl;
-    cout << "Total number of Lidar TTC frame drops: " << numTTCLidarFrameDrops<< endl;
+    cout << "Total number of Lidar TTC frame drops: " << numTTCLidarFrameDrops << endl;
+    cout << "Total number of images: " << imgIndex + 1 << endl;
     cout << "======== " << endl;
+    auto minMaxCam = std::minmax_element(CameraTTC.begin(), CameraTTC.end());
+    auto minMaxLid = std::minmax_element(LidarTTC.begin(), LidarTTC.end());
+
+    cout << "TTC Camera mean " << accumulate(CameraTTC.begin(), CameraTTC.end(), 0.0) / CameraTTC.size() << " min: " << *minMaxCam.first << " max: " << *minMaxCam.second << endl;
+    cout << "TTC Lidar mean " << accumulate(LidarTTC.begin(), LidarTTC.end(), 0.0) / LidarTTC.size() << " min: " << *minMaxLid.first << " max: " << *minMaxLid.second << endl;
 
     return 0;
 }

@@ -235,10 +235,122 @@ Matching bounding boxes accu time 0.821093 ms
 Shi-Tomasi detection with n=1828 keypoints in 13.587 ms
 #5 : DETECT KEYPOINTS done
 BRISK descriptor extraction in 20.0122 ms
-#6 : EXTRACT DESCRIPTORS done
-#7 : MATCH KEYPOINT DESCRIPTORS done
-Matching bounding boxes took 0.472491 ms
-Matching bounding boxes accu time 1.29358 ms
+#6 : EXTRACT DESCRIPTORS done### FP2 TTC Lidar computation using median
+Only deltaX is of interest for the equation, therefore median is a good option
+```cpp
+    // auxiliary variables
+    double dT = 1 / frameRate; // time between two measurements in seconds
+
+    std::vector<double> lidarPointsPrevX;
+    std::vector<double> lidarPointsCurrX;
+
+    // find closest distance to Lidar points
+    double minXPrev = 1e9, minXCurr = 1e9;
+    for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
+    {
+        minXPrev = minXPrev > it->x ? it->x : minXPrev;
+        lidarPointsPrevX.push_back(it->x);
+    }
+
+    for (auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it)
+    {
+        minXCurr = minXCurr > it->x ? it->x : minXCurr;
+        lidarPointsCurrX.push_back(it->x);
+    }
+    double medXPrev = computeMedianDouble(lidarPointsPrevX);
+    double medXCurr = computeMedianDouble(lidarPointsCurrX);
+    // compute TTC from both measurements
+    double TTCmin = minXCurr * dT / (minXPrev - minXCurr);
+    cout << "= TTCmin: " << TTCmin << endl;
+    TTC = medXCurr * dT / (medXPrev - medXCurr);
+```
+#7 : MATCH KEYPOINT DESCRIPTO### FP2 TTC Lidar computation using median
+Only deltaX is of interest for the equation, therefore median is a good option
+```cpp
+    // auxiliary variables
+    double dT = 1 / frameRate; // time between two measurements in seconds
+
+    std::vector<double> lidarPointsPrevX;
+    std::vector<double> lidarPointsCurrX;
+
+    // find closest distance to Lidar points
+    double minXPrev = 1e9, minXCurr = 1e9;
+    for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
+    {
+        minXPrev = minXPrev > it->x ? it->x : minXPrev;
+        lidarPointsPrevX.push_back(it->x);
+    }
+
+    for (auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it)
+    {
+        minXCurr = minXCurr > it->x ? it->x : minXCurr;
+        lidarPointsCurrX.push_back(it->x);
+    }
+    double medXPrev = computeMedianDouble(lidarPointsPrevX);
+    double medXCurr = computeMedianDouble(lidarPointsCurrX);
+    // compute TTC from both measurements
+    double TTCmin = minXCurr * dT / (minXPrev - minXCurr);
+    cout << "= TTCmin: " << TTCmin << endl;
+    TTC = medXCurr * dT / (medXPrev - medXCurr);
+```
+Matching bounding boxes took ### FP2 TTC Lidar computation using median
+Only deltaX is of interest for the equation, therefore median is a good option
+```cpp
+    // auxiliary variables
+    double dT = 1 / frameRate; // time between two measurements in seconds
+
+    std::vector<double> lidarPointsPrevX;
+    std::vector<double> lidarPointsCurrX;
+
+    // find closest distance to Lidar points
+    double minXPrev = 1e9, minXCurr = 1e9;
+    for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
+    {
+        minXPrev = minXPrev > it->x ? it->x : minXPrev;
+        lidarPointsPrevX.push_back(it->x);
+    }
+
+    for (auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it)
+    {
+        minXCurr = minXCurr > it->x ? it->x : minXCurr;
+        lidarPointsCurrX.push_back(it->x);
+    }
+    double medXPrev = computeMedianDouble(lidarPointsPrevX);
+    double medXCurr = computeMedianDouble(lidarPointsCurrX);
+    // compute TTC from both measurements
+    double TTCmin = minXCurr * dT / (minXPrev - minXCurr);
+    cout << "= TTCmin: " << TTCmin << endl;
+    TTC = medXCurr * dT / (medXPrev - medXCurr);
+```
+Matching bounding boxes accu ### FP2 TTC Lidar computation using median
+Only deltaX is of interest for the equation, therefore median is a good option
+```cpp
+    // auxiliary variables
+    double dT = 1 / frameRate; // time between two measurements in seconds
+
+    std::vector<double> lidarPointsPrevX;
+    std::vector<double> lidarPointsCurrX;
+
+    // find closest distance to Lidar points
+    double minXPrev = 1e9, minXCurr = 1e9;
+    for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
+    {
+        minXPrev = minXPrev > it->x ? it->x : minXPrev;
+        lidarPointsPrevX.push_back(it->x);
+    }
+
+    for (auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it)
+    {
+        minXCurr = minXCurr > it->x ? it->x : minXCurr;
+        lidarPointsCurrX.push_back(it->x);
+    }
+    double medXPrev = computeMedianDouble(lidarPointsPrevX);
+    double medXCurr = computeMedianDouble(lidarPointsCurrX);
+    // compute TTC from both measurements
+    double TTCmin = minXCurr * dT / (minXPrev - minXCurr);
+    cout << "= TTCmin: " << TTCmin << endl;
+    TTC = medXCurr * dT / (medXPrev - medXCurr);
+```8 ms
 #8 : TRACK 3D OBJECT BOUNDING BOXES done
 = TTCmin: 7.11572
 ==== 
@@ -473,6 +585,95 @@ Total number of Lidar TTC frame drops: 0
 ======== 
 
 ```
+
+### FP3 Assign enclosed keypoint matche
+Use median euclidean distance between previous and current keypoint of all matches to filter outliers.
+```cpp
+    vector<double> distCurrPrev;
+    for (size_t i = 0; i < kptMatches.size(); ++i)
+    {
+        if (boundingBox.roi.contains(kptsCurr[kptMatches[i].trainIdx].pt)) //found keypoint of current match in given bounding box
+        {
+            distCurrPrev.push_back(cv::norm(kptsCurr[kptMatches[i].trainIdx].pt - kptsPrev[kptMatches[i].queryIdx].pt));
+            //  cout << "Match ID: " << i << " distance distCurrPrev: " << (cv::norm(kptsCurr[kptMatches[i].trainIdx].pt - kptsPrev[kptMatches[i].queryIdx].pt)) << endl;
+        }
+    }
+    double medDistCurrPrev = computeMedianDouble(distCurrPrev);
+    double factor = 0.8;
+    cout << "Median distance (prev - current) for matched keypoints within bounding box: " << medDistCurrPrev << endl;
+
+    for (size_t i = 0; i < kptMatches.size(); ++i)
+    {
+        if (boundingBox.roi.contains(kptsCurr[kptMatches[i].trainIdx].pt)) //found keypoint of current match in given bounding box
+        {
+            double distTemp = (cv::norm(kptsCurr[kptMatches[i].trainIdx].pt - kptsPrev[kptMatches[i].queryIdx].pt));
+            if (((medDistCurrPrev + (factor * medDistCurrPrev)) > distTemp) && ((medDistCurrPrev - (factor * medDistCurrPrev)) < distTemp)) //kickout outliers
+            {
+                boundingBox.kptMatches.push_back(kptMatches[i]);
+                //  cout << "Match ID: " << i << " distance distCurrPrev: " << (cv::norm(kptsCurr[kptMatches[i].trainIdx].pt - kptsPrev[kptMatches[i].queryIdx].pt)) << endl;
+            }
+        }
+    }
+
+    cout << "For bounding box ID: " << boundingBox.boxID << " " << boundingBox.kptMatches.size() << " are associated!" << endl;
+```
+
+### FP4 Compute time-to-collision based on camera
+Use median euclidean distance between all keypoint to filter outliers.
+```cpp
+    // compute distance ratios between all matched keypoints
+    vector<double> distRatios; // stores the distance ratios for all keypoints between curr. and prev. frame
+    for (auto it1 = kptMatches.begin(); it1 != kptMatches.end() - 1; ++it1)
+    { // outer kpt. loop
+
+        // get current keypoint and its matched partner in the prev. frame
+        cv::KeyPoint kpOuterCurr = kptsCurr.at(it1->trainIdx);
+        cv::KeyPoint kpOuterPrev = kptsPrev.at(it1->queryIdx);
+
+        for (auto it2 = kptMatches.begin() + 1; it2 != kptMatches.end(); ++it2)
+        { // inner kpt.-loop
+
+            double minDist = 100.0; // min. required distance
+
+            // get next keypoint and its matched partner in the prev. frame
+            cv::KeyPoint kpInnerCurr = kptsCurr.at(it2->trainIdx);
+            cv::KeyPoint kpInnerPrev = kptsPrev.at(it2->queryIdx);
+
+            // compute distances and distance ratios
+            double distCurr = cv::norm(kpOuterCurr.pt - kpInnerCurr.pt);
+            double distPrev = cv::norm(kpOuterPrev.pt - kpInnerPrev.pt);
+
+            if (distPrev > std::numeric_limits<double>::epsilon() && distCurr >= minDist)
+            { // avoid division by zero
+
+                double distRatio = distCurr / distPrev;
+                distRatios.push_back(distRatio);
+            }
+        } // eof inner loop over all matched kpts
+    }     // eof outer loop over all matched kpts
+
+    // only continue if list of distance ratios is not empty
+    if (distRatios.size() == 0)
+    {
+        TTC = NAN;
+        return;
+    }
+
+    double medDistRatio = computeMedianDouble(distRatios);
+    double dT = 1 / frameRate;
+    TTC = -dT / (1 - medDistRatio);
+```
+
+### FP5 Performance evaluation 1
+Within 20 frames the ego vehicle reduces the distance by approximately 1m (8m-7m Lidar cloud). The framerate is 10Hz -> 20 frames -> ~2sec. Average diff velocity of the ego vehicle vs preceeding vehicle is 0.5m/s. Assumation, both vehicles move with constant velocity within this 20 frames time window. For 8m distance TTC: 16sec. For 7m distance TTC: 14sec
+
+For propper filtering and usage of high quality keypoints the code gives:
+```
+TTC Camera mean 10.8175 min: 6.99468 max: 16.6916
+TTC Lidar mean 11.7293 min: 8.3988 max: 16.6894
+```
+Bearing in mind the assumpation of the constant velocity TTC model used. The results are not way off and within expections. This changes if i.e. min(distance) is used. Then you get even unphyiscal results e.g. negative TTC. This is due to the outliers.
+
 
 
 

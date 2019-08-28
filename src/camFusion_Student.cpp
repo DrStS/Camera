@@ -165,7 +165,9 @@ void clusterKptMatchesWithROI(BoundingBox &boundingBox, std::vector<cv::KeyPoint
     }
     double medDistCurrPrev = computeMedianDouble(distCurrPrev);
     double factor = 0.8;
+#ifdef DEBUG
     cout << "Median distance (prev - current) for matched keypoints within bounding box: " << medDistCurrPrev << endl;
+#endif // DEBUG
 
     for (size_t i = 0; i < kptMatches.size(); ++i)
     {
@@ -179,8 +181,9 @@ void clusterKptMatchesWithROI(BoundingBox &boundingBox, std::vector<cv::KeyPoint
             }
         }
     }
-
+#ifdef DEBUG
     cout << "For bounding box ID: " << boundingBox.boxID << " " << boundingBox.kptMatches.size() << " are associated!" << endl;
+#endif // DEBUG
 }
 
 // Compute time-to-collision (TTC) based on keypoint correspondences in successive images
@@ -256,7 +259,10 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
     double medXCurr = computeMedianDouble(lidarPointsCurrX);
     // compute TTC from both measurements
     double TTCmin = minXCurr * dT / (minXPrev - minXCurr);
-   // cout << "= TTCmin: " << TTCmin << endl;
+    cout << "Distance X: " << medXCurr << endl;
+    cout << "Speed (ms): " << (medXPrev - medXCurr) / dT << endl;
+    cout << "Speed (kmh): " << ((medXPrev - medXCurr) / dT) * 3.6 << endl;
+    // cout << "= TTCmin: " << TTCmin << endl;
     TTC = medXCurr * dT / (medXPrev - medXCurr);
 }
 
@@ -384,6 +390,8 @@ void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bb
 #endif // DEBUG
         t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
         totalTime = totalTime + t;
+#ifdef DEBUG
         cout << "Matching bounding boxes took " << 1000 * t / 1.0 << " ms" << endl;
         cout << "Matching bounding boxes accu time " << 1000 * totalTime / 1.0 << " ms" << endl;
+#endif // DEBUG
     }
