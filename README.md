@@ -679,9 +679,82 @@ Please note that if the bounding box matching based on max number of keypoints i
 ```cpp
 if (currBB->lidarPoints.size() > 0 && prevBB->lidarPoints.size() > 0) // only compute TTC if we have Lidar points
 ```
-In such a case the descriptor/detector combination is not discussed anymore. 
+In such a case the descriptor/detector combination is discarded. Out of these 35 combination the following 9 give resonable results.
+```
+========================= detector type: SHITOMASI and descriptor type: BRISK
+======== 
+Total number of Lidar TTC frame drops: 0
+Total number of images: 20
+======== 
+TTC Camera mean 10.8015 min: 6.99468 max: 16.6916
+TTC Lidar mean 11.7293 min: 8.3988 max: 16.6894
+========================= detector type: SHITOMASI and descriptor type: SIFT
+======== 
+Total number of Lidar TTC frame drops: 0
+Total number of images: 20
+======== 
+TTC Camera mean 11.8513 min: 9.72761 max: 14.0745
+TTC Lidar mean 11.7293 min: 8.3988 max: 16.6894
+========================= detector type: AKAZE and descriptor type: SIFT
+======== 
+Total number of Lidar TTC frame drops: 0
+Total number of images: 20
+======== 
+TTC Camera mean 14.3587 min: 9.8441 max: 17.5557
+TTC Lidar mean 11.7293 min: 8.3988 max: 16.6894
+========================= detector type: FAST and descriptor type: SIFT
+======== 
+Total number of Lidar TTC frame drops: 0
+Total number of images: 20
+======== 
+TTC Camera mean 12.4861 min: 7.57825 max: 26.6881
+TTC Lidar mean 11.7293 min: 8.3988 max: 16.6894
+========================= detector type: BRISK and descriptor type: SIFT
+======== 
+Total number of Lidar TTC frame drops: 0
+Total number of images: 20
+======== 
+TTC Camera mean 12.4861 min: 7.57825 max: 26.6881
+TTC Lidar mean 11.7293 min: 8.3988 max: 16.6894
+========================= detector type: ORB and descriptor type: BRISK
+======== 
+Total number of Lidar TTC frame drops: 0
+Total number of images: 20
+======== 
+TTC Camera mean 12.0066 min: 8.73503 max: 17.7571
+TTC Lidar mean 11.7293 min: 8.3988 max: 16.6894
+========================= detector type: SIFT and descriptor type: SIFT
+======== 
+Total number of Lidar TTC frame drops: 0
+Total number of images: 20
+======== 
+TTC Camera mean 11.9834 min: 8.68319 max: 18.6009
+TTC Lidar mean 11.7293 min: 8.3988 max: 16.6894
+========================= detector type: HARRIS and descriptor type: BRISK
+======== 
+Total number of Lidar TTC frame drops: 0
+Total number of images: 20
+======== 
+TTC Camera mean 11.623 min: 7.35541 max: 23.1525
+TTC Lidar mean 11.7293 min: 8.3988 max: 16.6894
+========================= detector type: HARRIS and descriptor type: SIFT
+======== 
+Total number of Lidar TTC frame drops: 0
+Total number of images: 20
+======== 
+TTC Camera mean 11.8132 min: 7.70589 max: 17.595
+TTC Lidar mean 11.7293 min: 8.3988 max: 16.6894
+```
 
-                                
+Doing some basic statistics on these values results in
+
+Camera TTC
+<img src="images/detDesCamera.png" width="1280"  />  
+
+Lidar TTC
+<img src="images/detDesLidar.png" width="1280"  />   
+
+Therefore, SHITOMASI/SIFT and AKAZE/SIFT are a good choices for the problem.                       
 
 
 
