@@ -634,7 +634,7 @@ TTC Camera mean 11.8132 min: 7.70589 max: 17.595
 TTC Lidar mean 11.7293 min: 8.3988 max: 16.6894
 ```
 
-Doing some basic statistics on these values results in
+Doing some basic statistics (mean/min/max) on these values results in
 
 Camera TTC
 <img src="images/detDesCamera.png" width="1280"  />  
