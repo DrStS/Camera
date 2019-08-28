@@ -1,0 +1,11 @@
+clc
+clear
+load('data.mat')
+i =1;
+for intRow = 1:7:length(demo)
+    disp(['detector: '+demo{intRow,3}+' descriptor: '+demo{intRow,7}])
+    detDescVec{i,1}=['detector: '+demo{intRow,3}+' descriptor: '+demo{intRow,7}];
+    cameraTTCmean(i)=demo{intRow+5,4}
+    cameraTTCmin(i)=demo{intRow+5,4}
+    i=i+1;
+end
