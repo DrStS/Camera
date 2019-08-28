@@ -12,7 +12,7 @@ In this final project, you will implement the missing parts in the schematic. To
 
 ## Comments from Stefan Sicklinger
 
-### FP1 Bouding box matching
+### FP1 Bounding box matching
  A multimap is used and a filtering of keypoints based on the distance can be performed
 ```cpp
     double t = (double)cv::getTickCount();
@@ -668,7 +668,7 @@ Camera TTC
 Lidar TTC
 <img src="images/detDesLidar.png" width="1280"  />   
 
-Therefore, SHITOMASI/SIFT and AKAZE/SIFT are a good choices for the problem.                       
+Therefore, SHITOMASI/SIFT and AKAZE/SIFT are good choices for the problem.                       
 
 
 
