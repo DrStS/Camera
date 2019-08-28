@@ -170,7 +170,7 @@ Only deltaX is of interest for the equation, therefore median is a good option
     cout << "= TTCmin: " << TTCmin << endl;
     TTC = medXCurr * dT / (medXPrev - medXCurr);
 ```
-comparsion minX vs medianX 
+comparison minX vs medianX 
 ```
 #1 : LOAD IMAGE INTO BUFFER done
 #2 : DETECT & CLASSIFY OBJECTS done
@@ -589,11 +589,11 @@ Using high quality keypoints is giving better results here (see FP.1)
 ```
 
 ### FP.6 Performance evaluation 2
-Please note that if the bounding box matching based on max number of keypoints is wrong, hence the following check is not passed. 
+Please note that if the bounding box matching based on max number of keypoints is wrong, the following check is not passed. 
 ```cpp
 if (currBB->lidarPoints.size() > 0 && prevBB->lidarPoints.size() > 0) // only compute TTC if we have Lidar points
 ```
-In such a case the descriptor/detector combination is discarded. Out of these 35 combination the following 9 give resonable results.
+In such a case the descriptor/detector combination is discarded. Out of these 35 combination the following 9 give reasonable results.
 ```
 ========================= detector type: SHITOMASI and descriptor type: BRISK
 ======== 
