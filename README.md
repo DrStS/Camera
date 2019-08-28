@@ -560,7 +560,33 @@ For propper filtering and usage of high quality keypoints the code gives:
 TTC Camera mean 10.8175 min: 6.99468 max: 16.6916
 TTC Lidar mean 11.7293 min: 8.3988 max: 16.6894
 ```
-Bearing in mind the assumpation of the constant velocity TTC model used. The results are not way off and within expections. This changes if i.e. min(distance) is used. Then you get even unphyiscal results e.g. negative TTC. This is due to the outliers.
+Bearing in mind the assumption of the constant velocity TTC model used. The results are not way off and within expectations. This changes if i.e. min(distance) is used. Then you get even unphysical results e.g. negative TTC. This is due to the outliers.
+
+Using high quality keypoints is giving better results here (see FP.1)
+```cpp
+    //Compute  max and min distances between keypoints
+    for (int i = 0; i < matches.size(); i++)
+    {
+        double dist = matches[i].distance;
+        if (dist < min_dist)
+            min_dist = dist;
+        if (dist > max_dist)
+            max_dist = dist;
+    }
+    cout << "Max dist :: " << max_dist << endl;
+    cout << "Min dist :: " << min_dist << endl;
+    //Use only "good" matches (i.e. whose distance is less than 10*min_dist ) : deactiavted 1e6
+    std::vector<cv::DMatch> good_matches;
+
+    for (int i = 0; i < matches.size(); i++)
+    {
+        if (matches[i].distance < 10 * min_dist)
+        {
+            good_matches.push_back(matches[i]);
+        }
+    }
+    ///End Optional: this reduces accumulated time for all images for this function from 80ms to 14ms
+```
 
 ### FP.6 Performance evaluation 2
 Please note that if the bounding box matching based on max number of keypoints is wrong, hence the following check is not passed. 
