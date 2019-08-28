@@ -314,6 +314,8 @@ int main(int argc, const char *argv[])
                     cout << "==== " << endl;
                     cout << "==== TTC Lidar: " << ttcLidar << endl;
                     cout << "==== " << endl;
+                    cout << "==== TTC Camera: " << ttcCamera << endl;
+                    cout << "==== " << endl;
                     bVis = false;
 
                     if (bVis)

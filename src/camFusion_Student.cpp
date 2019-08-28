@@ -154,21 +154,40 @@ void show3DObjects(std::vector<BoundingBox> &boundingBoxes, cv::Size worldSize, 
 // associate a given bounding box with the keypoints it contains
 void clusterKptMatchesWithROI(BoundingBox &boundingBox, std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPoint> &kptsCurr, std::vector<cv::DMatch> &kptMatches)
 {
+    vector<double> distCurrPrev;
     for (size_t i = 0; i < kptMatches.size(); ++i)
     {
         if (boundingBox.roi.contains(kptsCurr[kptMatches[i].trainIdx].pt)) //found keypoint of current match in given bounding box
         {
-            boundingBox.kptMatches.push_back(kptMatches[i]);
+            distCurrPrev.push_back(cv::norm(kptsCurr[kptMatches[i].trainIdx].pt - kptsPrev[kptMatches[i].queryIdx].pt));
+            //  cout << "Match ID: " << i << " distance distCurrPrev: " << (cv::norm(kptsCurr[kptMatches[i].trainIdx].pt - kptsPrev[kptMatches[i].queryIdx].pt)) << endl;
         }
     }
-    cout<< "For bounding box ID: "<<boundingBox.boxID << " " << boundingBox.kptMatches.size() << " are associated!" <<endl;
+    double medDistCurrPrev = computeMedianDouble(distCurrPrev);
+    double factor = 0.8;
+    cout << "Median distance (prev - current) for matched keypoints within bounding box: " << medDistCurrPrev << endl;
+
+    for (size_t i = 0; i < kptMatches.size(); ++i)
+    {
+        if (boundingBox.roi.contains(kptsCurr[kptMatches[i].trainIdx].pt)) //found keypoint of current match in given bounding box
+        {
+            double distTemp = (cv::norm(kptsCurr[kptMatches[i].trainIdx].pt - kptsPrev[kptMatches[i].queryIdx].pt));
+            if (((medDistCurrPrev + (factor * medDistCurrPrev)) > distTemp) && ((medDistCurrPrev - (factor * medDistCurrPrev)) < distTemp)) //kickout outliers
+            {
+                boundingBox.kptMatches.push_back(kptMatches[i]);
+                //  cout << "Match ID: " << i << " distance distCurrPrev: " << (cv::norm(kptsCurr[kptMatches[i].trainIdx].pt - kptsPrev[kptMatches[i].queryIdx].pt)) << endl;
+            }
+        }
+    }
+
+    cout << "For bounding box ID: " << boundingBox.boxID << " " << boundingBox.kptMatches.size() << " are associated!" << endl;
 }
 
 // Compute time-to-collision (TTC) based on keypoint correspondences in successive images
 void computeTTCCamera(std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPoint> &kptsCurr,
                       std::vector<cv::DMatch> kptMatches, double frameRate, double &TTC, cv::Mat *visImg)
 {
-    /*    // compute distance ratios between all matched keypoints
+    // compute distance ratios between all matched keypoints
     vector<double> distRatios; // stores the distance ratios for all keypoints between curr. and prev. frame
     for (auto it1 = kptMatches.begin(); it1 != kptMatches.end() - 1; ++it1)
     { // outer kpt. loop
@@ -206,15 +225,9 @@ void computeTTCCamera(std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPo
         return;
     }
 
-
-    // STUDENT TASK (replacement for meanDistRatio)
-    std::sort(distRatios.begin(), distRatios.end());
-    long medIndex = floor(distRatios.size() / 2.0);
-    double medDistRatio = distRatios.size() % 2 == 0 ? (distRatios[medIndex - 1] + distRatios[medIndex]) / 2.0 : distRatios[medIndex]; // compute median dist. ratio to remove outlier influence
-
-    dT = 1 / frameRate;
+    double medDistRatio = computeMedianDouble(distRatios);
+    double dT = 1 / frameRate;
     TTC = -dT / (1 - medDistRatio);
-    */
 }
 
 void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
@@ -243,7 +256,7 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
     double medXCurr = computeMedianDouble(lidarPointsCurrX);
     // compute TTC from both measurements
     double TTCmin = minXCurr * dT / (minXPrev - minXCurr);
-    cout << "= TTCmin: " << TTCmin << endl;
+   // cout << "= TTCmin: " << TTCmin << endl;
     TTC = medXCurr * dT / (medXPrev - medXCurr);
 }
 
