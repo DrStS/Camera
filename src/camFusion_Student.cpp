@@ -154,7 +154,14 @@ void show3DObjects(std::vector<BoundingBox> &boundingBoxes, cv::Size worldSize, 
 // associate a given bounding box with the keypoints it contains
 void clusterKptMatchesWithROI(BoundingBox &boundingBox, std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPoint> &kptsCurr, std::vector<cv::DMatch> &kptMatches)
 {
-    // ...
+    for (size_t i = 0; i < kptMatches.size(); ++i)
+    {
+        if (boundingBox.roi.contains(kptsCurr[kptMatches[i].trainIdx].pt)) //found keypoint of current match in given bounding box
+        {
+            boundingBox.kptMatches.push_back(kptMatches[i]);
+        }
+    }
+    cout<< "For bounding box ID: "<<boundingBox.boxID << " " << boundingBox.kptMatches.size() << " are associated!" <<endl;
 }
 
 // Compute time-to-collision (TTC) based on keypoint correspondences in successive images
