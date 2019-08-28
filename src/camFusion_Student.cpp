@@ -13,6 +13,27 @@
 
 using namespace std;
 
+double computeMedianDouble(std::vector<double> &values)
+{
+    size_t size = values.size();
+    if (size == 0)
+    {
+        return 0;
+    }
+    else
+    {
+        sort(values.begin(), values.end());
+        if (size % 2 == 0)
+        {
+            return (values[size / 2 - 1] + values[size / 2]) / 2;
+        }
+        else
+        {
+            return values[size / 2];
+        }
+    }
+}
+
 // Create groups of Lidar points whose projection into the camera falls into the same bounding box
 void clusterLidarWithROI(std::vector<BoundingBox> &boundingBoxes, std::vector<LidarPoint> &lidarPoints, float shrinkFactor, cv::Mat &P_rect_xx, cv::Mat &R_rect_xx, cv::Mat &RT)
 {
@@ -66,7 +87,7 @@ void show3DObjects(std::vector<BoundingBox> &boundingBoxes, cv::Size worldSize, 
 {
     // create topview image
     cv::Mat topviewImg(imageSize, CV_8UC3, cv::Scalar(255, 255, 255));
-
+    //  cout << "Bouding boxes size: " << boundingBoxes.size() << endl;
     for (auto it1 = boundingBoxes.begin(); it1 != boundingBoxes.end(); ++it1)
     {
         // create randomized color for current 3D object
@@ -140,70 +161,209 @@ void clusterKptMatchesWithROI(BoundingBox &boundingBox, std::vector<cv::KeyPoint
 void computeTTCCamera(std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPoint> &kptsCurr,
                       std::vector<cv::DMatch> kptMatches, double frameRate, double &TTC, cv::Mat *visImg)
 {
-    // ...
+    /*    // compute distance ratios between all matched keypoints
+    vector<double> distRatios; // stores the distance ratios for all keypoints between curr. and prev. frame
+    for (auto it1 = kptMatches.begin(); it1 != kptMatches.end() - 1; ++it1)
+    { // outer kpt. loop
+
+        // get current keypoint and its matched partner in the prev. frame
+        cv::KeyPoint kpOuterCurr = kptsCurr.at(it1->trainIdx);
+        cv::KeyPoint kpOuterPrev = kptsPrev.at(it1->queryIdx);
+
+        for (auto it2 = kptMatches.begin() + 1; it2 != kptMatches.end(); ++it2)
+        { // inner kpt.-loop
+
+            double minDist = 100.0; // min. required distance
+
+            // get next keypoint and its matched partner in the prev. frame
+            cv::KeyPoint kpInnerCurr = kptsCurr.at(it2->trainIdx);
+            cv::KeyPoint kpInnerPrev = kptsPrev.at(it2->queryIdx);
+
+            // compute distances and distance ratios
+            double distCurr = cv::norm(kpOuterCurr.pt - kpInnerCurr.pt);
+            double distPrev = cv::norm(kpOuterPrev.pt - kpInnerPrev.pt);
+
+            if (distPrev > std::numeric_limits<double>::epsilon() && distCurr >= minDist)
+            { // avoid division by zero
+
+                double distRatio = distCurr / distPrev;
+                distRatios.push_back(distRatio);
+            }
+        } // eof inner loop over all matched kpts
+    }     // eof outer loop over all matched kpts
+
+    // only continue if list of distance ratios is not empty
+    if (distRatios.size() == 0)
+    {
+        TTC = NAN;
+        return;
+    }
+
+
+    // STUDENT TASK (replacement for meanDistRatio)
+    std::sort(distRatios.begin(), distRatios.end());
+    long medIndex = floor(distRatios.size() / 2.0);
+    double medDistRatio = distRatios.size() % 2 == 0 ? (distRatios[medIndex - 1] + distRatios[medIndex]) / 2.0 : distRatios[medIndex]; // compute median dist. ratio to remove outlier influence
+
+    dT = 1 / frameRate;
+    TTC = -dT / (1 - medDistRatio);
+    */
 }
 
 void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
                      std::vector<LidarPoint> &lidarPointsCurr, double frameRate, double &TTC)
 {
-    // ...
+    // auxiliary variables
+    double dT = 1 / frameRate; // time between two measurements in seconds
+
+    std::vector<double> lidarPointsPrevX;
+    std::vector<double> lidarPointsCurrX;
+
+    // find closest distance to Lidar points
+    double minXPrev = 1e9, minXCurr = 1e9;
+    for (auto it = lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
+    {
+        minXPrev = minXPrev > it->x ? it->x : minXPrev;
+        lidarPointsPrevX.push_back(it->x);
+    }
+
+    for (auto it = lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it)
+    {
+        minXCurr = minXCurr > it->x ? it->x : minXCurr;
+        lidarPointsCurrX.push_back(it->x);
+    }
+    double medXPrev = computeMedianDouble(lidarPointsPrevX);
+    double medXCurr = computeMedianDouble(lidarPointsCurrX);
+    // compute TTC from both measurements
+    double TTCmin = minXCurr * dT / (minXPrev - minXCurr);
+    cout << "= TTCmin: " << TTCmin << endl;
+    TTC = medXCurr * dT / (medXPrev - medXCurr);
 }
 
 void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bbBestMatches, DataFrame &prevFrame, DataFrame &currFrame)
 {
+    double t = (double)cv::getTickCount();
+    static double totalTime = 0;
     bool enableDebug = false;
     int currentBoxID;
     int previousBoxID;
     std::multimap<int, int> foundBBmatch; // <currentBoxID,previousBoxID>
-    for (size_t i = 0; i < matches.size(); ++i)
+
+    double max_dist = 0;
+    double min_dist = 100;
+    ///Optional
+    //Compute  max and min distances between keypoints
+    for (int i = 0; i < matches.size(); i++)
     {
-        //std::cout << currFrame.keypoints[matches[i].queryIdx].pt << prevFrame.keypoints[matches[i].trainIdx].pt << std::endl;
+        double dist = matches[i].distance;
+        if (dist < min_dist)
+            min_dist = dist;
+        if (dist > max_dist)
+            max_dist = dist;
+    }
+#ifdef DEBUG
+    cout << "Max dist :: " << max_dist << endl;
+    cout << "Min dist :: " << min_dist << endl;
+#endif // DEBUG
+    //Use only "good" matches (i.e. whose distance is less than 10*min_dist ) : deactiavted 1e6
+    std::vector<cv::DMatch> good_matches;
+
+    for (int i = 0; i < matches.size(); i++)
+    {
+        if (matches[i].distance < 10 * min_dist)
+        {
+            good_matches.push_back(matches[i]);
+        }
+    }
+    ///End Optional: this reduces accumulated time for all images for this function from 80ms to 14ms
+#ifdef DEBUG
+    cout << "Total number of matches: " << matches.size() << endl;
+    cout << "Total number of good matches: " << good_matches.size() << endl;
+#endif // DEBUG
+    for (size_t i = 0; i < good_matches.size(); ++i)
+    {
         //look for a matching bounding box on current frame
         for (size_t k = 0; k < currFrame.boundingBoxes.size(); ++k)
         {
-            if (currFrame.boundingBoxes[k].roi.contains(currFrame.keypoints[matches[i].queryIdx].pt)) //found a bounding box in current frame
+
+            if (currFrame.boundingBoxes[k].roi.contains(currFrame.keypoints[good_matches[i].trainIdx].pt)) //found a bounding box in current frame
             {
                 currentBoxID = currFrame.boundingBoxes[k].boxID;
                 //look for a matching bounding box on previous frame
                 for (size_t l = 0; l < prevFrame.boundingBoxes.size(); ++l)
                 {
-                    if (prevFrame.boundingBoxes[l].roi.contains(prevFrame.keypoints[matches[i].trainIdx].pt)) //found a bounding box in previous frame -> bounding box match
+
+                    if (prevFrame.boundingBoxes[l].roi.contains(prevFrame.keypoints[good_matches[i].queryIdx].pt)) //found a bounding box in previous frame -> bounding box match
                     {
                         previousBoxID = prevFrame.boundingBoxes[l].boxID;
                         foundBBmatch.insert({currentBoxID, previousBoxID});
-                        //std::cout << "currentBoxID: " << currentBoxID << " previousBoxID: " << previousBoxID  << std::endl;
                     }
                 }
             }
         }
     }
 
-    for (size_t k = 0; k < currFrame.boundingBoxes.size(); ++k)
-    {
-        if(enableDebug)
-        std::cout << "For bounding box (current frame) " << currFrame.boundingBoxes[k].boxID << " there are  " << foundBBmatch.count(currFrame.boundingBoxes[k].boxID) << " matched keypoints." << std::endl;
-        // Count matches in the previous frame
-        std::map<int, unsigned int> helperMap;
+#ifdef DEBUG
+    cout << "Total number of matches found: " << foundBBmatch.size() << endl;
 
-        for (auto it = foundBBmatch.equal_range(currFrame.boundingBoxes[k].boxID).first; it != foundBBmatch.equal_range(currFrame.boundingBoxes[k].boxID).second; ++it)
+    {
+        for (size_t k = 0; k < currFrame.boundingBoxes.size(); ++k)
         {
-            helperMap[(*it).second]++;
-            // std::cout << currFrame.boundingBoxes[k].boxID  <<" <-> "<< (*it).second <<std::endl;
+            if ((currFrame.boundingBoxes[k].lidarPoints.size() != 0))
+                std::cout << " Lidar points for bounding box (current frame): " << currFrame.boundingBoxes[k].lidarPoints.size() << " for BoundingBox ID:  " << currFrame.boundingBoxes[k].boxID << std::endl;
         }
-        std::vector<std::pair<int, unsigned int>> helperPairVec;
-        for (auto it = helperMap.begin(); it != helperMap.end(); ++it)
+
+        for (size_t l = 0; l < prevFrame.boundingBoxes.size(); ++l)
         {
-            if(enableDebug)
-            std::cout << "For bounding box (previous frame) " << it->first << " has count " << it->second << std::endl;
-            helperPairVec.push_back(*it);
+            if ((prevFrame.boundingBoxes[l].lidarPoints.size() != 0))
+                std::cout << " Lidar points for bounding box (previous frame): " << prevFrame.boundingBoxes[l].lidarPoints.size() << " for BoundingBox ID:  " << prevFrame.boundingBoxes[l].boxID << std::endl;
         }
-        //sort map by value using lambda code
-        sort(helperPairVec.begin(), helperPairVec.end(), [=](std::pair<int, unsigned int> &a, std::pair<int, unsigned int> &b) {
-            return a.second < b.second;
-        });
-        if(enableDebug)
-        std::cout << "First :" << helperPairVec.back().first <<  " second :" << helperPairVec.back().second <<std::endl;
-        if(enableDebug)
-        std::cout << "Bounding box (current frame): " << k <<  " is matched with bounding box (previous frame) " << helperPairVec.back().first <<std::endl;
+#endif // DEBUG
+
+        for (size_t k = 0; k < currFrame.boundingBoxes.size(); ++k)
+        {
+
+#ifdef DEBUG
+            std::cout << "=For bounding box (current frame) " << currFrame.boundingBoxes[k].boxID << " there are  " << foundBBmatch.count(currFrame.boundingBoxes[k].boxID) << " matched keypoints." << std::endl;
+#endif // DEBUG \
+    // Count matches in the previous frame
+            std::map<int, unsigned int> helperMap;
+
+            for (auto it = foundBBmatch.equal_range(currFrame.boundingBoxes[k].boxID).first; it != foundBBmatch.equal_range(currFrame.boundingBoxes[k].boxID).second; ++it)
+            {
+                helperMap[(*it).second]++;
+            }
+            if (helperMap.size() != 0)
+            {
+                std::vector<std::pair<int, unsigned int>> helperPairVec;
+                for (auto it = helperMap.begin(); it != helperMap.end(); ++it)
+                {
+#ifdef DEBUG
+                    std::cout << "For bounding box (previous frame) " << it->first << " has count " << it->second << std::endl;
+#endif // DEBUG
+                    helperPairVec.push_back(*it);
+                }
+                //sort map by value using lambda code
+                sort(helperPairVec.begin(), helperPairVec.end(), [=](std::pair<int, unsigned int> &a, std::pair<int, unsigned int> &b) {
+                    return a.second < b.second;
+                });
+#ifdef DEBUG
+                std::cout << "First :" << helperPairVec.back().first << " second :" << helperPairVec.back().second << std::endl;
+                std::cout << "Bounding box (current frame): " << currFrame.boundingBoxes[k].boxID << " is matched with bounding box (previous frame) " << helperPairVec.back().first << std::endl;
+#endif // DEBUG
+                if (foundBBmatch.count(currFrame.boundingBoxes[k].boxID) > 0)
+                    bbBestMatches.insert(std::pair<int, int>(helperPairVec.back().first, currFrame.boundingBoxes[k].boxID));
+            }
+        }
+#ifdef DEBUG
+
+        for (auto it = bbBestMatches.cbegin(); it != bbBestMatches.cend(); ++it)
+        {
+            std::cout << it->first << "---" << it->second << endl;
+        }
+#endif // DEBUG
+        t = ((double)cv::getTickCount() - t) / cv::getTickFrequency();
+        totalTime = totalTime + t;
+        cout << "Matching bounding boxes took " << 1000 * t / 1.0 << " ms" << endl;
+        cout << "Matching bounding boxes accu time " << 1000 * totalTime / 1.0 << " ms" << endl;
     }
-}

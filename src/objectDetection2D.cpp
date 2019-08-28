@@ -110,7 +110,7 @@ void detectObjects(cv::Mat& img, std::vector<BoundingBox>& bBoxes, float confThr
             cv::rectangle(visImg, cv::Point(left, top), cv::Point(left+width, top+height),cv::Scalar(0, 255, 0), 2);
             
             string label = cv::format("%.2f", (*it).confidence);
-            label = classes[((*it).classID)] + ":" + label;
+            label = classes[((*it).classID)] + ":" + label + ":" +  std::to_string((*it).boxID);
         
             // Display label at the top of the bounding box
             int baseLine;
@@ -124,6 +124,6 @@ void detectObjects(cv::Mat& img, std::vector<BoundingBox>& bBoxes, float confThr
         string windowName = "Object classification";
         cv::namedWindow( windowName, 1 );
         cv::imshow( windowName, visImg );
-        cv::waitKey(0); // wait for key to be pressed
+        cv::waitKey(1); // wait for key to be pressed
     }
 }
