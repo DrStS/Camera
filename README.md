@@ -586,8 +586,10 @@ Total number of Lidar TTC frame drops: 0
 
 ```
 
-### FP3 Assign enclosed keypoint matche
+### FP3 Assign enclosed keypoint matches
+
 Use median euclidean distance between previous and current keypoint of all matches to filter outliers.
+
 ```cpp
     vector<double> distCurrPrev;
     for (size_t i = 0; i < kptMatches.size(); ++i)
@@ -623,7 +625,7 @@ Use median euclidean distance between all keypoint to filter outliers.
 ```cpp
     // compute distance ratios between all matched keypoints
     vector<double> distRatios; // stores the distance ratios for all keypoints between curr. and prev. frame
-    for (auto it1 = kptMatches.begin(); it1 != kptMatches.end() - 1; ++it1)
+    for (auto it1 = kptMatches.begin(); it1 != kptMatches.end(); ++it1)
     { // outer kpt. loop
 
         // get current keypoint and its matched partner in the prev. frame
